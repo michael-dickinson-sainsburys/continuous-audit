@@ -2,10 +2,10 @@
 
 from aws_cdk import core
 
-from continuous_audit.continuous_audit_stack import ContinuousAuditStack
+from continuous_audit.prowler_stack import ProwlerStack
 
 
 app = core.App()
-ContinuousAuditStack(app, "continuous-audit")
+ProwlerStack(app, "prowler")
 
 app.synth()
