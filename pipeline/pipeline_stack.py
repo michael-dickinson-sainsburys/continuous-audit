@@ -1,11 +1,11 @@
-import os
-
 from aws_cdk import (
     aws_codepipeline as codepipeline,
     aws_codepipeline_actions as codepipeline_actions,
     core,
     pipelines
 )
+
+from pipeline.prowler_stage import ProwlerStage
 
 
 class PipelineStack(core.Stack):
@@ -18,7 +18,7 @@ class PipelineStack(core.Stack):
         source_artifact = codepipeline.Artifact()
         cloud_assembly_artifact = codepipeline.Artifact()
 
-        pipelines.CdkPipeline(
+        pipeline = pipelines.CdkPipeline(
             self,
             "ContinuousAudit",
             cloud_assembly_artifact=cloud_assembly_artifact,
@@ -39,3 +39,10 @@ class PipelineStack(core.Stack):
                 synth_command="cdk synth"
             )
         )
+
+        pipeline.add_application_stage(ProwlerStage(
+            self,
+            "Test",
+            env={"account": "673792865749",
+                 "region": "eu-west-2"}
+        ))
