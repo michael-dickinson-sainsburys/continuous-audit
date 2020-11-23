@@ -35,11 +35,13 @@ class PipelineStack(core.Stack):
                 source_artifact=source_artifact,
                 cloud_assembly_artifact=cloud_assembly_artifact,
                 install_commands=["npm install -g aws-cdk",
+                                  "pip install --upgrade pip",
+                                  "pip install pytest",
                                   "pip install -r requirements.txt"],
-                synth_command="cdk synth"
+                synth_command="cdk synth",
+                test_commands=["pytest -vvv"]
             )
         )
-
         pipeline.add_application_stage(ProwlerStage(
             self,
             "Test",
