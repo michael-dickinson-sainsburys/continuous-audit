@@ -4,8 +4,7 @@ RUN apt update && \
     pip install awscli boto3 detect-secrets && \
     apt install -y python3-pip && \
     apt install -y jq
-#RUN git clone https://github.com/toniblyx/prowler
-RUN git clone https://github.com/michael-dickinson-sainsburys/prowler
+RUN git clone https://github.com/toniblyx/prowler
 ADD script.sh /
 RUN chmod +x /script.sh
 WORKDIR /prowler
