@@ -1,6 +1,4 @@
 from aws_cdk import (
-    aws_codepipeline as codepipeline,
-    aws_codepipeline_actions as codepipeline_actions,
     aws_iam as iam,
     core,
     pipelines
@@ -20,34 +18,27 @@ class PipelineStack(core.Stack):
                                                                       "DeveloperPolicy",
                                                                       "ccoe/js-developer")
 
-        source_artifact = codepipeline.Artifact()
-        cloud_assembly_artifact = codepipeline.Artifact()
-
-        pipeline = pipelines.CdkPipeline(
+        pipeline = pipelines.CodePipeline(
             self,
-            "ContinuousAudit",
-            cloud_assembly_artifact=cloud_assembly_artifact,
-            pipeline_name="ContinuousAuditPipeline",
-            source_action=codepipeline_actions.GitHubSourceAction(
-                action_name="GitHub",
-                branch="main",
-                output=source_artifact,
-                oauth_token=core.SecretValue.secrets_manager("github-token"),
-                owner="michael-dickinson-sainsburys",
-                repo="continuous-audit"
-            ),
-            synth_action=pipelines.SimpleSynthAction(
-                source_artifact=source_artifact,
-                cloud_assembly_artifact=cloud_assembly_artifact,
-                install_commands=["npm install -g aws-cdk",
-                                  "pip install --upgrade pip",
-                                  "pip install pytest",
-                                  "pip install -r requirements.txt"],
-                synth_command="cdk synth",
-                test_commands=["pytest -vvv"]
+            "ContinuousAuditPipeline",
+            self_mutation=True,
+            synth=pipelines.ShellStep(
+                "Synth",
+                input=pipelines.CodePipelineSource.connection(
+                    "michael-dickinson-sainsburys/continuous-audit",
+                    "main",
+                    connection_arn="arn:aws:codestar-connections:eu-west-1:532982424333:connection/069ffc23-fa4c-4b97-890b-b4711a443dc3"
+                ),
+                commands=[
+                    "npm install -g aws-cdk",
+                    "pip install --upgrade pip",
+                    "pip install -r requirements.txt",
+                    "cdk synth"
+                ]
             )
         )
-        pipeline.add_application_stage(ProwlerStage(
+
+        pipeline.add_stage(ProwlerStage(
             self,
             "Test",
             env={"account": "532982424333",

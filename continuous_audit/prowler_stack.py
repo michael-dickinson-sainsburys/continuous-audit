@@ -42,7 +42,7 @@ class ProwlerStack(core.Stack):
             self,
             "PushAllActiveAccountsOntoQueue",
             runtime=lambda_.Runtime.PYTHON_3_8,
-            code=lambda_.Code.asset("lambda/pushAllActiveActivesOntoQueue"),
+            code=lambda_.Code.from_asset("lambda/pushAllActiveActivesOntoQueue"),
             handler="lambda_function.lambda_handler",
             environment={"SQS_QUEUE_URL": queue.queue_url,
                          "GLOBAL_READ_ONLY_ROLE": "/ccoe/ccoe-read-only"}
@@ -103,7 +103,7 @@ class ProwlerStack(core.Stack):
             self,
             "RunFargateTask",
             runtime=lambda_.Runtime.PYTHON_3_8,
-            code=lambda_.Code.asset("lambda/runFargateTask"),
+            code=lambda_.Code.from_asset("lambda/runFargateTask"),
             handler="lambda_function.lambda_handler",
             environment={
                 "CLUSTER_ARN": cluster.cluster_arn,
@@ -145,7 +145,7 @@ class ProwlerStack(core.Stack):
             self,
             "ClearAlarmQueue",
             runtime=lambda_.Runtime.PYTHON_3_8,
-            code=lambda_.Code.asset("lambda/clearAlarmQueue"),
+            code=lambda_.Code.from_asset("lambda/clearAlarmQueue"),
             handler="lambda_function.lambda_handler",
             environment={
                 "QUEUE_URL": sqs_alarm_queue.queue_url
