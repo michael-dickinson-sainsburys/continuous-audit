@@ -18,4 +18,3 @@ aws-cdk.aws-sns-subscriptions
 aws-cdk.aws-sqs
 aws-cdk.core
 aws-cdk.pipelines
-boto3
