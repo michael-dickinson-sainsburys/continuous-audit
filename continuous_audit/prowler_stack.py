@@ -28,12 +28,17 @@ class ProwlerStack(core.Stack):
                  **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
+        developer_policy = iam.ManagedPolicy.from_managed_policy_name(self,
+                                                                      "DeveloperPolicy",
+                                                                      "ccoe/js-developer")
+        iam.PermissionsBoundary.of(self).apply(developer_policy)
+
         queue = sqs.Queue(
             self,
             "StartProwlerScan",
             receive_message_wait_time=core.Duration.seconds(20),
             visibility_timeout=core.Duration.seconds(7200))
-        push_all_active_accounts_onto_queue_lambda_function = lambda_.Function(
+        push_all_active_accounts_onto_queue = lambda_.Function(
             self,
             "PushAllActiveAccountsOntoQueue",
             runtime=lambda_.Runtime.PYTHON_3_8,
@@ -43,16 +48,16 @@ class ProwlerStack(core.Stack):
                          "GLOBAL_READ_ONLY_ROLE": "/ccoe/ccoe-read-only"}
         )
         event_lambda_target = events_targets.LambdaFunction(
-            handler=push_all_active_accounts_onto_queue_lambda_function
+            handler=push_all_active_accounts_onto_queue
         )
-        queue.grant_send_messages(push_all_active_accounts_onto_queue_lambda_function)
+        queue.grant_send_messages(push_all_active_accounts_onto_queue)
         schedule = events.Schedule.rate(core.Duration.days(1))
         events.Rule(self,
                     "DailyTrigger",
                     schedule=schedule,
                     targets=[event_lambda_target])
 
-        vpc = ec2.Vpc(self, "Vpc")
+        vpc = ec2.Vpc.from_lookup(self, "VPC", is_default=False, vpc_name="sharedservices-dev")
         cluster = ecs.Cluster(self, "Cluster", vpc=vpc)
         logging = ecs.AwsLogDriver(stream_prefix="ProwlerTask",
                                    log_retention=logs.RetentionDays.ONE_DAY)
@@ -94,7 +99,7 @@ class ProwlerStack(core.Stack):
                            )
                        ])
         )
-        run_fargate_task_lambda_function = lambda_.Function(
+        run_fargate_task = lambda_.Function(
             self,
             "RunFargateTask",
             runtime=lambda_.Runtime.PYTHON_3_8,
@@ -109,9 +114,9 @@ class ProwlerStack(core.Stack):
                 "TASK_DEFINITION_ARN": prowler_task.task_definition_arn
             }
         )
-        queue.grant(run_fargate_task_lambda_function, "sqs:GetQueueAttributes")
+        queue.grant(run_fargate_task, "sqs:GetQueueAttributes")
         sqs_alarm_topic = sns.Topic(self, "SqsAlarmTopic")
-        sqs_alarm_topic.grant_publish(run_fargate_task_lambda_function)
+        sqs_alarm_topic.grant_publish(run_fargate_task)
         sqs_alarm_queue = sqs.Queue(self,
                                     "SqsAlarmQueue",
                                     retention_period=core.Duration.days(14),
@@ -119,15 +124,15 @@ class ProwlerStack(core.Stack):
         sqs_alarm_topic.add_subscription(sns_subscriptions.SqsSubscription(
             sqs_alarm_queue
         ))
-        run_fargate_task_lambda_function.add_event_source(
+        run_fargate_task.add_event_source(
             lambda_event_sources.SqsEventSource(sqs_alarm_queue)
         )
-        run_fargate_task_lambda_function.add_to_role_policy(
+        run_fargate_task.add_to_role_policy(
             iam.PolicyStatement(actions=["ecs:RunTask"],
                                 effect=iam.Effect.ALLOW,
                                 resources=[prowler_task.task_definition_arn])
         )
-        run_fargate_task_lambda_function.add_to_role_policy(
+        run_fargate_task.add_to_role_policy(
             iam.PolicyStatement(actions=["iam:PassRole"],
                                 effect=iam.Effect.ALLOW,
                                 resources=[

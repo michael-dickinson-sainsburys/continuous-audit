@@ -1,6 +1,7 @@
 from aws_cdk import (
     aws_codepipeline as codepipeline,
     aws_codepipeline_actions as codepipeline_actions,
+    aws_iam as iam,
     core,
     pipelines
 )
@@ -14,6 +15,10 @@ class PipelineStack(core.Stack):
                  id: str,
                  **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
+
+        developer_policy = iam.ManagedPolicy.from_managed_policy_name(self,
+                                                                      "DeveloperPolicy",
+                                                                      "ccoe/js-developer")
 
         source_artifact = codepipeline.Artifact()
         cloud_assembly_artifact = codepipeline.Artifact()
@@ -45,6 +50,7 @@ class PipelineStack(core.Stack):
         pipeline.add_application_stage(ProwlerStage(
             self,
             "Test",
-            env={"account": "673792865749",
-                 "region": "eu-west-2"}
+            env={"account": "532982424333",
+                 "region": "eu-west-1"}
         ))
+        iam.PermissionsBoundary.of(pipeline).apply(developer_policy)
