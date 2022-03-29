@@ -1,4 +1,4 @@
-FROM python:latest
+FROM public.ecr.aws/docker/library/python:latest
 RUN apt update && \
     apt upgrade -y && \
     pip install awscli boto3 detect-secrets && \
