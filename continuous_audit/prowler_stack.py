@@ -51,7 +51,7 @@ class ProwlerStack(core.Stack):
             handler=push_all_active_accounts_onto_queue
         )
         queue.grant_send_messages(push_all_active_accounts_onto_queue)
-        schedule = events.Schedule.rate(core.Duration.days(1))
+        schedule = events.Schedule.cron(hour="2", minute="00")
         events.Rule(self,
                     "DailyTrigger",
                     schedule=schedule,
