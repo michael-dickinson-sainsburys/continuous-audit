@@ -25,6 +25,7 @@ class ProwlerStack(core.Stack):
     def __init__(self,
                  scope: core.Construct,
                  id: str,
+                 vpc_name: str,
                  **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
@@ -57,7 +58,10 @@ class ProwlerStack(core.Stack):
                     schedule=schedule,
                     targets=[event_lambda_target])
 
-        vpc = ec2.Vpc.from_lookup(self, "VPC", is_default=False, vpc_name="sharedservices-dev")
+        vpc = ec2.Vpc.from_lookup(self,
+                                  "VPC",
+                                  is_default=False,
+                                  vpc_name=vpc_name)
         cluster = ecs.Cluster(self, "Cluster", vpc=vpc)
         logging = ecs.AwsLogDriver(stream_prefix="ProwlerTask",
                                    log_retention=logs.RetentionDays.ONE_DAY)

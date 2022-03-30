@@ -21,6 +21,7 @@ class PipelineStack(core.Stack):
         pipeline = pipelines.CodePipeline(
             self,
             "ContinuousAuditPipeline",
+            cross_account_keys=True,
             self_mutation=True,
             synth=pipelines.ShellStep(
                 "Synth",
@@ -38,10 +39,18 @@ class PipelineStack(core.Stack):
             )
         )
 
+        iam.PermissionsBoundary.of(pipeline).apply(developer_policy)
         pipeline.add_stage(ProwlerStage(
             self,
             "Test",
             env={"account": "532982424333",
-                 "region": "eu-west-1"}
+                 "region": "eu-west-1"},
+            vpc_name="sharedservices-dev"
         ))
-        iam.PermissionsBoundary.of(pipeline).apply(developer_policy)
+        pipeline.add_stage(ProwlerStage(
+            self,
+            "Prod",
+            env={"account": "057726927330",
+                 "region": "eu-west-1"},
+            vpc_name="JS_SS_VPC_Outbound_Internet"
+        ))
