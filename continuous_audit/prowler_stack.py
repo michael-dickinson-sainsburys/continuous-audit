@@ -25,6 +25,7 @@ class ProwlerStack(core.Stack):
     def __init__(self,
                  scope: core.Construct,
                  id: str,
+                 fargate_task_role_arn: str,
                  vpc_name: str,
                  **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
@@ -32,6 +33,9 @@ class ProwlerStack(core.Stack):
         developer_policy = iam.ManagedPolicy.from_managed_policy_name(self,
                                                                       "DeveloperPolicy",
                                                                       "ccoe/js-developer")
+        fargate_task_role = iam.Role.from_role_arn(self,
+                                                   "FargateTaskRole",
+                                                   fargate_task_role_arn)
         iam.PermissionsBoundary.of(self).apply(developer_policy)
 
         queue = sqs.Queue(
@@ -76,7 +80,8 @@ class ProwlerStack(core.Stack):
         prowler_task = ecs.FargateTaskDefinition(self,
                                                  "ProwlerTaskDefinition",
                                                  cpu=256,
-                                                 memory_limit_mib=512)
+                                                 memory_limit_mib=512,
+                                                 task_role=fargate_task_role)
         prowler_task.add_container(
             "Prowler_image",
             image=ecs.ContainerImage.from_docker_image_asset(image),
@@ -85,23 +90,6 @@ class ProwlerStack(core.Stack):
                 "RESULTS_BUCKET": results_bucket.bucket_name,
                 "SQS_QUEUE_URL": queue.queue_url
             }
-        )
-        task_role = prowler_task.task_role
-        task_role.add_managed_policy(
-            iam.ManagedPolicy.from_aws_managed_policy_name("ReadOnlyAccess")
-        )
-        queue.grant(task_role, "sqs:DeleteMessage")
-        results_bucket.grant_put(task_role)
-        task_role.attach_inline_policy(
-            iam.Policy(self,
-                       "AssumeRolePermissions",
-                       statements=[
-                           iam.PolicyStatement(
-                               actions=["sts:AssumeRole"],
-                               effect=iam.Effect.ALLOW,
-                               resources=["*"]
-                           )
-                       ])
         )
         run_fargate_task = lambda_.Function(
             self,

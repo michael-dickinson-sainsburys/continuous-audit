@@ -45,6 +45,7 @@ class PipelineStack(core.Stack):
             "Test",
             env={"account": "532982424333",
                  "region": "eu-west-1"},
+            fargate_task_role_arn="arn:aws:iam::532982424333:role/ccoe/prowler-task-definition-role",
             vpc_name="sharedservices-dev"
         ))
         pipeline.add_stage(ProwlerStage(
@@ -52,5 +53,6 @@ class PipelineStack(core.Stack):
             "Prod",
             env={"account": "057726927330",
                  "region": "eu-west-1"},
+            fargate_task_role_arn="arn:aws:iam::057726927330:role/ccoe/prowler-task-definition-role",
             vpc_name="JS_SS_VPC_Outbound_Internet"
         ))
