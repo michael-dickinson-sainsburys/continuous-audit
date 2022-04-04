@@ -43,6 +43,7 @@ class PipelineStack(core.Stack):
         pipeline.add_stage(ProwlerStage(
             self,
             "Test",
+            cfn_exec_role_arn="arn:aws:iam::532982424333:role/ccoe/cdk-cfn-exec-role",
             env={"account": "532982424333",
                  "region": "eu-west-1"},
             fargate_task_role_arn="arn:aws:iam::532982424333:role/ccoe/prowler-task-definition-role",
@@ -51,6 +52,7 @@ class PipelineStack(core.Stack):
         pipeline.add_stage(ProwlerStage(
             self,
             "Prod",
+            cfn_exec_role_arn="arn:aws:iam::057726927330:role/ccoe/cdk-cfn-exec-role",
             env={"account": "057726927330",
                  "region": "eu-west-1"},
             fargate_task_role_arn="arn:aws:iam::057726927330:role/ccoe/prowler-task-definition-role",
