@@ -28,7 +28,7 @@ class PipelineStack(core.Stack):
                 input=pipelines.CodePipelineSource.connection(
                     "michael-dickinson-sainsburys/continuous-audit",
                     "main",
-                    connection_arn="arn:aws:codestar-connections:eu-west-1:532982424333:connection/069ffc23-fa4c-4b97-890b-b4711a443dc3"
+                    connection_arn="arn:aws:codestar-connections:eu-west-1:584517481562:connection/fcad54c1-9817-4447-80f2-df51c5a4cd37"
                 ),
                 commands=[
                     "npm install -g aws-cdk",
@@ -43,11 +43,11 @@ class PipelineStack(core.Stack):
         pipeline.add_stage(ProwlerStage(
             self,
             "Test",
-            cfn_exec_role_arn="arn:aws:iam::532982424333:role/ccoe/cdk-cfn-exec-role",
-            env={"account": "532982424333",
+            cfn_exec_role_arn="arn:aws:iam::584517481562:role/ccoe/cdk-cfn-exec-role",
+            env={"account": "584517481562",
                  "region": "eu-west-1"},
-            fargate_task_role_arn="arn:aws:iam::532982424333:role/ccoe/prowler-task-definition-role",
-            vpc_name="sharedservices-dev"
+            fargate_task_role_arn="arn:aws:iam::584517481562:role/ccoe/prowler-task-definition-role",
+            vpc_name="JS_SS_VPC_Outbound_Internet"
         ))
         pipeline.add_stage(ProwlerStage(
             self,

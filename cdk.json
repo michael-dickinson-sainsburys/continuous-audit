@@ -5,7 +5,7 @@
         "aws-cdk:enableDiffNoFail": "true",
         "@aws-cdk/core:stackRelativeExports": "true",
         "@aws-cdk/core:newStyleStackSynthesis": "true",
-        "availability-zones:account=532982424333:region=eu-west-1": [
+        "availability-zones:account=584517481562:region=eu-west-1": [
             "eu-west-1a",
             "eu-west-1b",
             "eu-west-1c"
